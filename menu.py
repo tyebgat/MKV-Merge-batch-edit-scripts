@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import shutil
 
 # ---------------------------------------------------------------
 # CONFIGURATION — edit these to match your script locations
@@ -36,7 +37,22 @@ SCRIPTS = {
 def clear():
     os.system('cls')
 
+def check_dependencies():
+    if shutil.which("mkvmerge") is None:
+        print("╔══════════════════════════════════════════════════╗")
+        print("║  ERROR: mkvmerge not found on PATH               ║")
+        print("║                                                  ║")
+        print("║  Install MKVToolNix from:                        ║")
+        print("║  https://mkvtoolnix.download/downloads.html      ║")
+        print("║                                                  ║")
+        print("║  During install, enable:                         ║")
+        print("║  'Add MKVToolNix to the PATH'                    ║")
+        print("╚══════════════════════════════════════════════════╝")
+        input("\n  Press Enter to exit...")
+        sys.exit(1)
+
 def main(): 
+    check_dependencies()
     current_dir = os.getcwd() #current directory
 
     while True:
