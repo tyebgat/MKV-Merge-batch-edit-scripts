@@ -53,7 +53,7 @@ Write-Host "Found $($mkvFiles.Count) MKV file(s) to process`n"
 #------------------------------------------------------------
 # Ask which language to set as default
 #------------------------------------------------------------
-$defaultLang = Read-Host "Enter the language code to set as default subtitle (e.g. spa, eng) — leave blank for none"
+$defaultLang = Read-Host "Enter the language code to set as default subtitle (e.g. spa, eng) - leave blank for none"
 $defaultLang = $defaultLang.Trim().ToLower()
 
 if ($defaultLang -ne '' -and -not $langMap.ContainsKey($defaultLang)) {
@@ -78,7 +78,7 @@ Get-ChildItem *.mkv | ForEach-Object {
     $subtitleFiles = Get-ChildItem "$baseName*.srt", "$baseName*.ass", "$baseName*.ssa" -ErrorAction SilentlyContinue
 
     if ($subtitleFiles.Count -eq 0) {
-        Write-Host "  No matching subtitle files found — skipping.`n" -ForegroundColor Gray
+        Write-Host "  No matching subtitle files found - skipping.`n" -ForegroundColor Gray
         return
     }
 
