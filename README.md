@@ -35,6 +35,32 @@ mkvmerge --version
 
 ## **Scripts**
 
+### The Format
+To make sure this scripts work make sure you input the directory where your files are.
+Ex:
+Lets say that in you have a folder called SeriesName and inside its this:
+
+```
+- SeriesName S01E01.mkv
+- SeriesName S01E02.mkv
+- SeriesName S01E03.mkv
+- SeriesName S01E04.mkv
+- SeriesName S01E05.mkv
+- SeriesName S01E01.spa.ass
+- SeriesName S01E02.spa.ass
+- SeriesName S01E03.spa.ass
+- SeriesName S01E04.spa.ass
+- SeriesName S01E05.spa.ass
+```
+
+So to be in that directory you should copy it from the top of your explorer windows. It should be something like
+
+```
+"C:\Users\ExUser\Series\SeriesName"
+```
+
+Depending on the script you choose it will only the target the video files or both the subtitle and the video file and it will ignore everything else inside the folder.
+
 ### THIS SCRIPTS WILL NOT WORK WITH ANY OITHER VIDEO FILE EXCEPT MKV
 As of now there are 5 Scripts in the Program each with its different use.
 
