@@ -86,7 +86,7 @@ while ($true) {
     $input = Read-Host "Enter track ID to keep (or press Enter to finish)"
     if ($input -eq '') {
         if ($subsToKeep.Count -eq 0) {
-            Write-Host " No tracks entered — all subtitle tracks will be deleted.`n" -ForegroundColor Red
+            Write-Host " No tracks entered - all subtitle tracks will be deleted.`n" -ForegroundColor Red
         }
         break
     }
