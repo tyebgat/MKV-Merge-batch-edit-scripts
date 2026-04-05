@@ -67,6 +67,58 @@ Write-Host ""
 #------------------------------------------------------------
 New-Item -ItemType Directory -Force -Path "original_files" | Out-Null
 New-Item -ItemType Directory -Force -Path "subs"           | Out-Null
+$originalFilesDir = ".\Original Files"
+$subFilesDir =  ".\subs"
+$should_continue = $true
+
+#=================================================
+# CHECK IF THERE ARE CONTENTS IN ORIGINAL FILES
+#=================================================
+if (Test-Path $originalFilesDir) {
+    $contents = Get-ChildItem -Path $originalFilesDir
+    if ($contents.Count -eq 0){
+        Write-Host "Folder is empty, Moving Files..." -ForegroundColor Green
+    } else {
+        Write-Host "Found $($contents.Count) item(s) in 'Original Files': " -ForegroundColor Yellow
+        $contents | ForEach-Object {Write-Host "- $($_.Name)"}
+                
+        $confirm = Read-Host "`n Delete File Content(s)? [If not then the operation will be canceled]: "
+
+        if ($confirm -eq 'y'){
+            $should_continue = $true
+            $contents | Remove-Item -Recurse -Force
+            Write-Host "Removed Content Files Succesfully... " -ForegroundColor Green                    
+        } else {
+            $should_continue = $false
+            Write-Host "Cancelling Operation..." -ForegroundColor Red
+            exit
+        }
+    }
+}
+#=================================================
+# CHECK IF THERE ARE CONTENTS IN 'Subs' FOLDER
+#=================================================
+if (Test-Path $subFilesDir) {
+    $contents = Get-ChildItem -Path $subFilesDir
+    if ($contents.Count -eq 0){
+        Write-Host "Folder is empty, Moving Files..." -ForegroundColor Green
+    } else {
+        Write-Host "Found $($contents.Count) item(s) in 'subs': " -ForegroundColor Yellow
+        $contents | ForEach-Object {Write-Host "- $($_.Name)"}
+                
+        $confirm = Read-Host "`n Delete File Content(s)? [If not then the operation will be canceled]: "
+
+        if ($confirm -eq 'y'){
+            $should_continue = $true
+            $contents | Remove-Item -Recurse -Force
+            Write-Host "Removed Content Files Succesfully... " -ForegroundColor Green
+        } else {
+            $should_continue = $false
+            Write-Host "Cancelling Operation..." -ForegroundColor Red
+            exit
+        }
+    }
+}
 
 Get-ChildItem *.mkv | ForEach-Object {
     $videoFile = $_
@@ -123,12 +175,16 @@ Get-ChildItem *.mkv | ForEach-Object {
     & mkvmerge $mkvmergeArgs
 
     if ($?) {
-        Move-Item $videoFile.Name "original_files\" -Force
-        foreach ($subFile in $subtitleFiles) {
-            Move-Item $subFile.FullName "subs\" -Force
+        if ($should_continue){
+            Write-Host "Moving Files to original files folder..." -ForegroundColor Green
+            Move-Item $videoFile.Name "original_files\" -Force
+            Write-Host "Moving Files to subs folder..." -ForegroundColor Green
+            foreach ($subFile in $subtitleFiles) {
+                Move-Item $subFile.FullName "subs\" -Force
+            }
+            Rename-Item "$($baseName)_temp.mkv" $videoFile.Name -Force
+            Write-Host "  Done: $($videoFile.Name)`n" -ForegroundColor Green
         }
-        Rename-Item "$($baseName)_temp.mkv" $videoFile.Name -Force
-        Write-Host "  Done: $($videoFile.Name)`n" -ForegroundColor Green
     } else {
         Write-Host "  Error processing: $($videoFile.Name)`n" -ForegroundColor Red
         if (Test-Path "$($baseName)_temp.mkv") {

@@ -52,13 +52,13 @@ Write-Host "`n=== Track List (from: $($firstFile.Name)) ===" -ForegroundColor Cy
 
 $trackInfo = & mkvmerge -J $firstFile.Name | ConvertFrom-Json
 
-$subtitleTracks = $trackInfo.tracks | Where-Object { $_.type -eq 'subtitles' }
+$allTracks = $trackInfo.tracks
 
-if ($subtitleTracks.Count -eq 0) {
-    Write-Host "No subtitle tracks found in this file." -ForegroundColor Yellow
+if ($allTracks.Count -eq 0) {
+    Write-Host "No Tracks found in this file, is this an MKV?." -ForegroundColor Yellow
 } else {
     Write-Host ""
-    foreach ($track in $subtitleTracks) {
+    foreach ($track in $allTracks) {
         $langCode = if ($track.properties.language_ietf) {
             $track.properties.language_ietf
         } else {
@@ -69,7 +69,7 @@ if ($subtitleTracks.Count -eq 0) {
         $isDefault = if ($track.properties.default_track) { ' [default]' } else { '' }
         $isForced  = if ($track.properties.forced_track)  { ' [forced]'  } else { '' }
 
-        Write-Host "  ID $($track.id)  |  $($track.codec)  |  $langName ($langCode)  |  $trackName$isDefault$isForced"
+        Write-Host "  ID $($track.id)  |    $($track.type)  |  $($track.codec)  |  $langName ($langCode)  |  $trackName$isDefault$isForced"
     }
     Write-Host ""
 }

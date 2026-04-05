@@ -83,19 +83,19 @@ Write-Host "You will be asked which one to set as default.`n"
 $subsToKeep = @{}
 
 while ($true) {
-    $input = Read-Host "Enter track ID to keep (or press Enter to finish)"
-    if ($input -eq '') {
+    $input1 = Read-Host "Enter track ID to keep (or press Enter to finish)"
+    if ($input1 -eq '') {
         if ($subsToKeep.Count -eq 0) {
             Write-Host " No tracks entered - all subtitle tracks will be deleted.`n" -ForegroundColor Red
         }
         break
     }
 
-    if ($input -match '^\d+$') {
-        $subsToKeep[[int]$input] = $false
-        Write-Host "  Track $input added." -ForegroundColor Green
+    if ($input1 -match '^\d+$') {
+        $subsToKeep[[int]$input1] = $false
+        Write-Host "  Track $input1 added." -ForegroundColor Green
     } else {
-        Write-Host "  Invalid input. Please enter a numeric track ID." -ForegroundColor Red
+        Write-Host "  Invalid input1. Please enter a numeric track ID." -ForegroundColor Red
     }
 }
 
@@ -120,13 +120,42 @@ if ($subsToKeep.Count -gt 0) {
 
 # Create backup directory
 New-Item -ItemType Directory -Force -Path "original_files" | Out-Null
+$originalFilesDir = ".\original_files"
+$should_continue = $true
+
+#=================================================
+# CHECK IF THERE ARE CONTENTS IN 'original_files' FOLDER
+#=================================================
+if (Test-Path $originalFilesDir) {
+    $contents = Get-ChildItem -Path $originalFilesDir
+    if ($contents.Count -eq 0){
+        Write-Host "Folder is empty, Moving Files..." -ForegroundColor Green
+    } else {
+    Write-Host "Found $($contents.Count) item(s) in 'Original Files': " -ForegroundColor Yellow
+    $contents | ForEach-Object {Write-Host "- $($_.Name)"}
+                
+    $confirm = Read-Host "`n Delete File Content(s)? [If not then the operation will be canceled] [y/n]: "
+
+    if ($confirm -eq 'y'){
+        $should_continue = $true
+        $contents | Remove-Item -Recurse -Force
+        Write-Host "Removed Content Files Succesfully... " -ForegroundColor Green                    
+    } else {
+        $should_continue = $false
+        Write-Host "Cancelling Operation..." -ForegroundColor Red
+        exit
+        }
+    }
+}
 
 # Process each MKV file
 Get-ChildItem *.mkv | ForEach-Object { 
-    Write-Host "Processing: $($_.Name)"
+    $videoFile = $_
+    $baseName  = $videoFile.BaseName
+    Write-Host "Processing: $($videoFile.Name)"
     
     # Get track info via mkvmerge JSON output
-    $trackInfo = & mkvmerge -J $_.Name | ConvertFrom-Json
+    $trackInfo = & mkvmerge -J $videoFile.Name | ConvertFrom-Json
     
     # Build the subtitle tracks parameter
     $subTracksParam = ($subsToKeep.Keys | Sort-Object) -join ','
@@ -136,8 +165,10 @@ Get-ChildItem *.mkv | ForEach-Object {
     foreach ($trackId in $subsToKeep.Keys) {
 
         # Set default state
+        $isChosen = ($trackId -eq [int]$defaultTrack)
+
         $trackParams += "--default-track"
-        $trackParams += "${trackId}:$($subsToKeep[$trackId].ToString().ToLower())"
+        $trackParams += "${trackID}:$($isChosen.ToString().ToLower())"
 
         # Find the track in JSON and grab its language
         $track = $trackInfo.tracks | Where-Object { $_.id -eq $trackId }
@@ -167,24 +198,31 @@ Get-ChildItem *.mkv | ForEach-Object {
     # Execute mkvmerge with all parameters
     if ($subsToKeep.Count -eq 0) {
         $mkvmergeArgs = @(
-        '-o', "$($_.BaseName)_temp.mkv"
+        '-o', "$($baseName)_temp.mkv"
         '--no-subtitles'
         $_.Name
     )
     } else{
         $mkvmergeArgs = @(
-            '-o', "$($_.BaseName)_temp.mkv"
+            '-o', "$($baseName)_temp.mkv"
             '--subtitle-tracks', $subTracksParam
-        ) + $trackParams + @($_.Name)
+        ) + $trackParams + @($videoFile.Name)
     }
     & mkvmerge $mkvmergeArgs
     
     if($?) { 
-        Move-Item $_.Name "original_files\"
-        Rename-Item "$($_.BaseName)_temp.mkv" $_.Name
-        Write-Host "Completed: $($_.Name)" -ForegroundColor Green
+        if ($should_continue){
+            Write-Host "Moving Files to original files folder..." -ForegroundColor Green
+            Move-Item $videoFile.Name "original_files\" -Force
+            Rename-Item "$($baseName)_temp.mkv" $videoFile.Name -Force
+            Write-Host "Completed: $($baseName)" -ForegroundColor Green
+        }
     } else {
         Write-Host "Error processing: $($_.Name)" -ForegroundColor Red
+        Write-Host "Removing Created Files... " -ForegroundColor Red
+        if (Test-Path "$($baseName)_temp.mkv") {
+            Remove-Item "$($baseName)_temp.mkv" -Force
+        }
     }
 }
 
