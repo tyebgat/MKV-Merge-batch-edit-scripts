@@ -48,7 +48,7 @@ def check_dependencies():
         print("║  During install, enable:                         ║")
         print("║  'Add MKVToolNix to the PATH'                    ║")
         print("╚══════════════════════════════════════════════════╝")
-        input("\n  Press Enter to exit...")
+        input("\nPress Enter to exit...")
         sys.exit(1)
 
 def main(): 
@@ -60,9 +60,9 @@ def main():
         print("╔══════════════════════════════╗")
         print("║       MKV Script Launcher    ║")
         print("╚══════════════════════════════╝\n")
-        print(f"  Current directory: {current_dir}\n")
+        print(f"Current directory: {current_dir}\n")
 
-        cd_input = input("  cd: ").strip()
+        cd_input = input("Enter Directory (press Enter to keep using the selected one): ").strip()
 
         #allow the user to type just a path or cd and path
         path = cd_input.removeprefix("cd").strip().strip('"').strip("'")
@@ -75,14 +75,14 @@ def main():
         new_dir = os.path.normpath(new_dir)
 
         if not os.path.isdir(new_dir):
-            input(f"\n  Directory not found: {new_dir}\n  Press Enter to try again...")
+            input(f"\nDirectory not found: {new_dir}\n  Press Enter to try again...")
             continue
 
         current_dir = new_dir
         clear()
 
-        print(f"  Directory set to: {current_dir}\n")
-        confirm = input("  Is this correct? (Y/N): ").strip().lower()
+        print(f"Directory set to: {current_dir}\n")
+        confirm = input("Is this correct? (Y/N): ").strip().lower()
 
         if confirm != 'y':
             continue
@@ -90,10 +90,10 @@ def main():
         while True:
             clear()
             print("=== Select a Script ===\n")
-            print(f"  Current directory: {current_dir}\n")
+            print(f"Current directory: {current_dir}\n")
             for key, (name, path) in SCRIPTS.items():
                 print(f"  [{key}]  {name}")
-            print("\n  [Q]  Quit\n")
+            print("\n  [Q]  Back to Directory Select.\n")
             choice = input("  Choose: ").strip().lower()
 
             if choice == 'q':
@@ -103,9 +103,6 @@ def main():
             if choice in SCRIPTS:
                 name, script_path = SCRIPTS[choice] #makes a varibale in correleation to the value of the directionary
                 clear()
-                print(f"  Running : {name}")
-                print(f"  In      : {current_dir}")
-                print("-" * 50 + "\n")
 
                 subprocess.run(
                     ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path],
@@ -113,10 +110,10 @@ def main():
                 )
 
                 print("\n" + "-" * 50)
-                input("  Done. Press Enter to return to menu...")
-                break
+                input("Done. Press Enter to return to menu...")
+                continue
             else:
-                input("  Invalid choice. Press Enter to try again...")
+                input("Invalid choice. Press Enter to try again...")
 
 if __name__ == "__main__":
     main()

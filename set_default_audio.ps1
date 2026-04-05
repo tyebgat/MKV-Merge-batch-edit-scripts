@@ -94,6 +94,33 @@ while ($true) {
 # Process every MKV in the directory
 #------------------------------------------------------------
 New-Item -ItemType Directory -Force -Path "original_files" | Out-Null
+$originalFilesDir = ".\original_files"
+$should_continue = $true
+
+#=================================================
+# CHECK IF THERE ARE CONTENTS IN 'original_files' FOLDER
+#=================================================
+if (Test-Path $originalFilesDir) {
+$contents = Get-ChildItem -Path $originalFilesDir
+    if ($contents.Count -eq 0){
+        Write-Host "Folder is empty, Moving Files..." -ForegroundColor Green
+    } else {
+    Write-Host "Found $($contents.Count) item(s) in 'Original Files': " -ForegroundColor Yellow
+    $contents | ForEach-Object {Write-Host "- $($_.Name)"}
+                
+    $confirm = Read-Host "`n Delete File Content(s)? [If not then the operation will be canceled] [y/n]: "
+
+    if ($confirm -eq 'y'){
+        $should_continue = $true
+        $contents | Remove-Item -Recurse -Force
+        Write-Host "Removed Content Files Succesfully... " -ForegroundColor Green                    
+    } else {
+        $should_continue = $false
+        Write-Host "Cancelling Operation..." -ForegroundColor Red
+        exit
+        }
+    }
+}
 
 Get-ChildItem *.mkv | ForEach-Object {
     Write-Host "Processing: $($_.Name)"
@@ -116,13 +143,16 @@ Get-ChildItem *.mkv | ForEach-Object {
     & mkvmerge $mkvmergeArgs
 
     if ($?) {
-        Move-Item $_.Name "original_files\"
-        Rename-Item "$($_.BaseName)_temp.mkv" $_.Name
-        Write-Host "  Done: $($_.Name)" -ForegroundColor Green
+        if ($should_continue){
+            Write-Host "Moving Files to 'original_files' folder..." -ForegroundColor Green
+            Move-Item $_.Name "original_files\" -Force
+            Rename-Item "$($_.BaseName)_temp.mkv" $_.Name -Force
+            Write-Host "  Done: $($_.Name)" -ForegroundColor Green
+        }
     } else {
         Write-Host "  Error processing: $($_.Name)" -ForegroundColor Red
         if (Test-Path "$($_.BaseName)_temp.mkv") {
-            Remove-Item "$($_.BaseName)_temp.mkv"
+            Remove-Item "$($_.BaseName)_temp.mkv" -Force
         }
     }
 }
