@@ -28,6 +28,10 @@ SCRIPTS = {
         _s("set_default_audio.ps1")
         ),
     "5": (
+        "Transcode to H.264 8-bit + OPUS", 
+        _s("transcode_to_h264.ps1")
+        ),
+    "6": (
         "Show Track IDs (first file)", 
         _s("show_track_ids.ps1")
         )
@@ -38,15 +42,32 @@ def clear():
     os.system('cls')
 
 def check_dependencies():
+    missing = []
     if shutil.which("mkvmerge") is None:
+        missing.append("mkvmerge")
+    if shutil.which("ffmpeg") is None:
+        missing.append("ffmpeg")
+    if missing:
         print("╔══════════════════════════════════════════════════╗")
-        print("║  ERROR: mkvmerge not found on PATH               ║")
-        print("║                                                  ║")
-        print("║  Install MKVToolNix from:                        ║")
-        print("║  https://mkvtoolnix.download/downloads.html      ║")
-        print("║                                                  ║")
-        print("║  During install, enable:                         ║")
-        print("║  'Add MKVToolNix to the PATH'                    ║")
+        for tool in missing:
+            if tool == "mkvmerge":
+                print("║  ERROR: mkvmerge not found on PATH          ║")
+                print("║                                              ║")
+                print("║  Install MKVToolNix from:                    ║")
+                print("║  https://mkvtoolnix.download/downloads.html  ║")
+                print("║                                              ║")
+                print("║  During install, enable:                     ║")
+                print("║  'Add MKVToolNix to the PATH'                ║")
+            if tool == "ffmpeg":
+                print("║  ERROR: ffmpeg not found on PATH             ║")
+                print("║                                              ║")
+                print("║  Install ffmpeg from:                        ║")
+                print("║  https://ffmpeg.org/download.html            ║")
+                print("║                                              ║")
+                print("║  Add ffmpeg to your system PATH.             ║")
+            if tool != missing[-1]:
+                print("║                                              ║")
+                print("║  --------------------------------------     ║")
         print("╚══════════════════════════════════════════════════╝")
         input("\nPress Enter to exit...")
         sys.exit(1)
