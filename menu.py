@@ -3,10 +3,7 @@ import subprocess
 import sys
 import shutil
 
-# ---------------------------------------------------------------
-# CONFIGURATION — edit these to match your script locations
-# ---------------------------------------------------------------
-_BASE = os.path.dirname(os.path.abspath(__file__))
+_BASE = os.path.dirname(os.path.abspath(sys.argv[0]))
 _BIN = os.path.join(_BASE, "bin")
 
 def _s(name):
@@ -88,16 +85,16 @@ def check_dependencies():
         input("\nPress Enter to exit...")
         sys.exit(1)
 
-# def debug_tool_paths():
-#     print("--- Tool resolution ---")
-#     for name in ("mkvmerge", "ffmpeg"):
-#         local = os.path.join(_BIN, name + ".exe")
-#         if os.path.isfile(local):
-#             print(f"  {name}: bundled -> {local}")
-#         else:
-#             system = shutil.which(name)
-#             print(f"  {name}: {'system -> ' + system if system else 'NOT FOUND'}")
-#     print("-----------------------\n")
+def debug_tool_paths():
+    print("--- Tool resolution ---")
+    for name in ("mkvmerge", "ffmpeg"):
+        local = os.path.join(_BIN, name + ".exe")
+        if os.path.isfile(local):
+            print(f"  {name}: bundled -> {local}")
+        else:
+            system = shutil.which(name)
+            print(f"  {name}: {'system -> ' + system if system else 'NOT FOUND'}")
+    print("-----------------------\n")
 
 def main(): 
     check_dependencies()
@@ -108,7 +105,7 @@ def main():
         print("╔══════════════════════════════╗")
         print("║       MKV Script Launcher    ║")
         print("╚══════════════════════════════╝\n")
-        # debug_tool_paths()
+        debug_tool_paths()
         print(f"Current directory: {current_dir}\n")
 
         cd_input = input("Enter Directory (press Enter to keep using the selected one): ").strip()

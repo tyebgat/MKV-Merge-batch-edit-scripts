@@ -1,10 +1,9 @@
 # MKV Merge batch edit scripts
-Scripts that are meant for batch editing subtitles and audio on folders with various files (like series and movies)
+An entirely portable CLI tool the uses mkvmerge and ffmpeg to do some basic batch processing on mkvs.
 
 ## Table of Contents
 
 - [What It Is](#what-it-is)
-- [Requirements](#requirements)
 - [Installation](#installation)
 - [Scripts](#scripts)
 
@@ -13,25 +12,14 @@ Scripts that are meant for batch editing subtitles and audio on folders with var
 
 I've been struggling with stuff for my Jellyfin server and library management in general. There are tools that can sort of batch edit files but they're clunky and slow most of the time, which is why I made these PowerShell scripts that use MKV Merge to edit things like subtitles and audio.
 
-After seeing the requirements you'll say "Why not just use MKVToolNix?" Well, that's because it's not really good for editing batch files, at least it was enough of a pain to make me create scripts for the things I wanted.
+Both MkvMerge and FFmpeg are bundled with the program, no need for any other dependencies.
 
 These scripts are mostly meant for editing series in batch, meaning video files that have the subtitles, audio, etc. on the same Track ID. Although using them for individual files still works.
 
-## **REQUIREMENTS:**
-
-- MKV Merge on system PATH
-- Python 3.11 or above
-
 ## **Installation**
 
-- You need MKV Merge to be set as System PATH.
-- The easiest way to do this is by installing MKVToolNix.
-- During the installer of MKVToolNix be sure to check 'Add MKVToolNix to the PATH'
-
-Check if you have it on PATH already by opening up the terminal and typing:
-```
-mkvmerge --version
-```
+- Download the Latest version in Releases
+- Launch the .exe
 
 ## **Scripts**
 
@@ -78,7 +66,7 @@ It then prompts you to input the track IDs you want to keep and will remove any 
 > Note:
 > If another track that is being kept is set as forced or default, it will not override that. For that use the Set Default Subs script.
 
-If you do not input anything and just press Enter, the program will delete every subtitle track.
+*If you do not input anything and just press Enter, the program will delete every subtitle track.*
 
 ### 2. Embed Subtitles to Video
 
@@ -108,6 +96,75 @@ The program prompts you for which track ID to set as default. The difference wit
 
 Functions the same as the subtitle variant but instead of showing the subtitle track IDs it shows the audio track IDs, then changes the default based on the user's input using the same logic as the subtitle variant.
 
-### 5. Show Track IDs
+### 5. Transcode using FFmpeg
 
-Grabs the first video file in the folder and prints all of its Track IDs.
+Transcodes all mkvs files in the directory you inputed.
+Transcodes are all in 8 bit video.
+
+I needed a script to modify my media so it can all be direct play without any external clients.
+
+Before the transcoding it gives you a series of options.
+
+#### Select Video Codec:
+```
+Select video codec:
+  1) H.264
+  2) H.265
+  3) AV1
+
+  (AV1 forces software encoding)  
+```
+
+Lets you choose which codec to put your video in. All of these will be in 8 bit color.
+H.264 is the one most universally suported.
+AV1 is not supported by most hardware acceleration so it will force you to use cpu rendering.
+
+#### Hardware Acceleration:
+```
+Select hardware acceleration:
+  0) None (software encoding)
+  1) NVENC  (NVIDIA GPU)
+  2) QSV    (Intel GPU / iGPU)
+  3) AMF    (AMD GPU / iGPU)
+```
+
+Lets you choose which Hardware acceleration to use, this is way faster than using cpu/software rendering.
+You will need to have your gpu drivers installed to get this feature.
+
+#### Aduio Codec:
+```
+Select audio codec:
+  1) AAC
+  2) Opus
+  3) E-AC3
+  4) Passthrough (no re-encode)
+```
+
+Lets you choose the audio codec.
+- AAC is essentially MP4. All devices support this.
+- Opus a better mp4, higher quality and smaller size. Basically All devices support it.
+- E-AC3 also known as Dolby Audio. Only devices that support dolby audio can play it.
+- Passthrough. The audio codec will be the same as the source file.
+
+#### Select Resolution:
+```
+Select output resolution:
+  0) Same as source
+  1) 1080p  (1920x1080)
+  2) 720p   (1280x720)
+  3) 480p   (854x480)
+```
+
+Pretty self explanatory.
+
+#### Enter quality:
+```
+Enter quality (0-51, default 23, lower = better):
+```
+
+It will prompt you to enter the constant quality of the file. The lower this value is the higher the quality. 
+Although putting this value too low will get you enormous file sizes, I recommend putting 20-21 for live actions films and just leaving it at 23 for Animated shows/films.
+
+### 6. Show Track IDs (first file)
+
+Shows a Table of all the Track IDs of the first file in the inputted folder.
