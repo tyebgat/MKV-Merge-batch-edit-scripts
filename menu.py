@@ -28,7 +28,7 @@ SCRIPTS = {
         _s("set_default_audio.ps1")
         ),
     "5": (
-        "Transcode to H.264 8-bit + OPUS", 
+        "Transcode using ffmpeg", 
         _s("transcode_to_h264.ps1")
         ),
     "6": (
@@ -125,9 +125,12 @@ def main():
                 name, script_path = SCRIPTS[choice] #makes a varibale in correleation to the value of the directionary
                 clear()
 
+                escaped_dir = current_dir.replace("'", "''")
+                escaped_script = script_path.replace("'", "''")
                 subprocess.run(
-                    ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path],
-                    cwd=current_dir
+                    ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                     "-Command",
+                     "Set-Location -LiteralPath '{0}'; & '{1}'".format(escaped_dir, escaped_script)],
                 )
 
                 print("\n" + "-" * 50)
