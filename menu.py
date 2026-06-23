@@ -7,8 +7,15 @@ import shutil
 # CONFIGURATION — edit these to match your script locations
 # ---------------------------------------------------------------
 _BASE = os.path.dirname(os.path.abspath(__file__))
+_BIN = os.path.join(_BASE, "bin")
+
 def _s(name):
     return os.path.join(_BASE, name)
+
+def _env_with_bin():
+    env = os.environ.copy()
+    env["PATH"] = _BIN + os.pathsep + env["PATH"]
+    return env
 
 SCRIPTS = {
     "1": (
@@ -41,11 +48,20 @@ SCRIPTS = {
 def clear():
     os.system('cls')
 
+def _find_tool(name):
+    local = os.path.join(_BIN, name + ".exe")
+    if os.path.isfile(local):
+        print("Using bundled tool.")
+        return local
+    found = shutil.which(name)
+    print("Using tool from PATH")
+    return found
+
 def check_dependencies():
     missing = []
-    if shutil.which("mkvmerge") is None:
+    if _find_tool("mkvmerge") is None:
         missing.append("mkvmerge")
-    if shutil.which("ffmpeg") is None:
+    if _find_tool("ffmpeg") is None:
         missing.append("ffmpeg")
     if missing:
         print("╔══════════════════════════════════════════════════╗")
@@ -72,6 +88,17 @@ def check_dependencies():
         input("\nPress Enter to exit...")
         sys.exit(1)
 
+# def debug_tool_paths():
+#     print("--- Tool resolution ---")
+#     for name in ("mkvmerge", "ffmpeg"):
+#         local = os.path.join(_BIN, name + ".exe")
+#         if os.path.isfile(local):
+#             print(f"  {name}: bundled -> {local}")
+#         else:
+#             system = shutil.which(name)
+#             print(f"  {name}: {'system -> ' + system if system else 'NOT FOUND'}")
+#     print("-----------------------\n")
+
 def main(): 
     check_dependencies()
     current_dir = os.getcwd() #current directory
@@ -81,6 +108,7 @@ def main():
         print("╔══════════════════════════════╗")
         print("║       MKV Script Launcher    ║")
         print("╚══════════════════════════════╝\n")
+        # debug_tool_paths()
         print(f"Current directory: {current_dir}\n")
 
         cd_input = input("Enter Directory (press Enter to keep using the selected one): ").strip()
@@ -129,8 +157,9 @@ def main():
                 escaped_script = script_path.replace("'", "''")
                 subprocess.run(
                     ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                     "-Command",
-                     "Set-Location -LiteralPath '{0}'; & '{1}'".format(escaped_dir, escaped_script)],
+                    "-Command",
+                    "Set-Location -LiteralPath '{0}'; & '{1}'".format(escaped_dir, escaped_script)],
+                    env=_env_with_bin()
                 )
 
                 print("\n" + "-" * 50)
