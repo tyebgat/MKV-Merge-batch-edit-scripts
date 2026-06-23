@@ -3,12 +3,16 @@ import subprocess
 import sys
 import shutil
 
-# ---------------------------------------------------------------
-# CONFIGURATION — edit these to match your script locations
-# ---------------------------------------------------------------
-_BASE = os.path.dirname(os.path.abspath(__file__))
+_BASE = os.path.dirname(os.path.abspath(sys.argv[0]))
+_BIN = os.path.join(_BASE, "bin")
+
 def _s(name):
     return os.path.join(_BASE, name)
+
+def _env_with_bin():
+    env = os.environ.copy()
+    env["PATH"] = _BIN + os.pathsep + env["PATH"]
+    return env
 
 SCRIPTS = {
     "1": (
@@ -28,6 +32,10 @@ SCRIPTS = {
         _s("set_default_audio.ps1")
         ),
     "5": (
+        "Transcode using ffmpeg", 
+        _s("transcode_to_h264.ps1")
+        ),
+    "6": (
         "Show Track IDs (first file)", 
         _s("show_track_ids.ps1")
         )
@@ -37,19 +45,56 @@ SCRIPTS = {
 def clear():
     os.system('cls')
 
+def _find_tool(name):
+    local = os.path.join(_BIN, name + ".exe")
+    if os.path.isfile(local):
+        print("Using bundled tool.")
+        return local
+    found = shutil.which(name)
+    print("Using tool from PATH")
+    return found
+
 def check_dependencies():
-    if shutil.which("mkvmerge") is None:
+    missing = []
+    if _find_tool("mkvmerge") is None:
+        missing.append("mkvmerge")
+    if _find_tool("ffmpeg") is None:
+        missing.append("ffmpeg")
+    if missing:
         print("╔══════════════════════════════════════════════════╗")
-        print("║  ERROR: mkvmerge not found on PATH               ║")
-        print("║                                                  ║")
-        print("║  Install MKVToolNix from:                        ║")
-        print("║  https://mkvtoolnix.download/downloads.html      ║")
-        print("║                                                  ║")
-        print("║  During install, enable:                         ║")
-        print("║  'Add MKVToolNix to the PATH'                    ║")
+        for tool in missing:
+            if tool == "mkvmerge":
+                print("║  ERROR: mkvmerge not found on PATH          ║")
+                print("║                                              ║")
+                print("║  Install MKVToolNix from:                    ║")
+                print("║  https://mkvtoolnix.download/downloads.html  ║")
+                print("║                                              ║")
+                print("║  During install, enable:                     ║")
+                print("║  'Add MKVToolNix to the PATH'                ║")
+            if tool == "ffmpeg":
+                print("║  ERROR: ffmpeg not found on PATH             ║")
+                print("║                                              ║")
+                print("║  Install ffmpeg from:                        ║")
+                print("║  https://ffmpeg.org/download.html            ║")
+                print("║                                              ║")
+                print("║  Add ffmpeg to your system PATH.             ║")
+            if tool != missing[-1]:
+                print("║                                              ║")
+                print("║  --------------------------------------     ║")
         print("╚══════════════════════════════════════════════════╝")
         input("\nPress Enter to exit...")
         sys.exit(1)
+
+def debug_tool_paths():
+    print("--- Tool resolution ---")
+    for name in ("mkvmerge", "ffmpeg"):
+        local = os.path.join(_BIN, name + ".exe")
+        if os.path.isfile(local):
+            print(f"  {name}: bundled -> {local}")
+        else:
+            system = shutil.which(name)
+            print(f"  {name}: {'system -> ' + system if system else 'NOT FOUND'}")
+    print("-----------------------\n")
 
 def main(): 
     check_dependencies()
@@ -60,6 +105,7 @@ def main():
         print("╔══════════════════════════════╗")
         print("║       MKV Script Launcher    ║")
         print("╚══════════════════════════════╝\n")
+        debug_tool_paths()
         print(f"Current directory: {current_dir}\n")
 
         cd_input = input("Enter Directory (press Enter to keep using the selected one): ").strip()
@@ -104,9 +150,13 @@ def main():
                 name, script_path = SCRIPTS[choice] #makes a varibale in correleation to the value of the directionary
                 clear()
 
+                escaped_dir = current_dir.replace("'", "''")
+                escaped_script = script_path.replace("'", "''")
                 subprocess.run(
-                    ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path],
-                    cwd=current_dir
+                    ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-Command",
+                    "Set-Location -LiteralPath '{0}'; & '{1}'".format(escaped_dir, escaped_script)],
+                    env=_env_with_bin()
                 )
 
                 print("\n" + "-" * 50)
