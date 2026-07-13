@@ -86,24 +86,32 @@ Before beginning the embed it will ask which subtitle language code to set as de
 > Note:
 > If another track is set as forced or default, it will not override that. For that use the Set Default Subs script.
 
-### 3. Set Default Subtitle
+### 3. Extract Subtitle
+
+Gives you the track ID list from the first video on the folder.
+
+The program prompts you for which subtitle track IDs to extract. It will then extract them into a folder named "Extracted subs"
+
+### 4. Set Default Subtitle
 
 Similar to Filter Subtitles, the program gives the track ID list of the first video file in the folder.
 
 The program prompts you for which track ID to set as default. The difference with the others is that this script overrides any forced or default track that has been set before, making it so that only the selected track ID will be set as default.
 
-### 4. Set Default Audio
+### 5. Set Default Audio
 
 Functions the same as the subtitle variant but instead of showing the subtitle track IDs it shows the audio track IDs, then changes the default based on the user's input using the same logic as the subtitle variant.
 
-### 5. Transcode using FFmpeg
+### 6. Transcode using FFmpeg
 
 Transcodes all mkvs files in the directory you inputed.
 Transcodes are all in 8 bit video.
 
 I needed a script to modify my media so it can all be direct play without any external clients.
 
-Before the transcoding it gives you a series of options.
+It will first prompt you if you want to insert your own ffmpeg arguments or go through a guided proccess.
+
+If you select a guided process then the next menu will follow:
 
 #### Select Video Codec:
 ```
@@ -165,6 +173,6 @@ Enter quality (0-51, default 23, lower = better):
 It will prompt you to enter the constant quality of the file. The lower this value is the higher the quality. 
 Although putting this value too low will get you enormous file sizes, I recommend putting 20-21 for live actions films and just leaving it at 23 for Animated shows/films.
 
-### 6. Show Track IDs (first file)
+### 7. Show Track IDs (first file)
 
 Shows a Table of all the Track IDs of the first file in the inputted folder.
