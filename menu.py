@@ -24,18 +24,22 @@ SCRIPTS = {
         _s("embed_subtitles_sources_to_mkvs.ps1")
         ),
     "3": (
+        "Extract Subtitles",
+        _s("extract_subtitles.ps1")
+        ),
+    "4": (
         "Set default Subtitle.", 
         _s("set_default_sub.ps1")
         ),
-    "4": (
+    "5": (
         "Set default Audio.", 
         _s("set_default_audio.ps1")
         ),
-    "5": (
+    "6": (
         "Transcode using ffmpeg", 
         _s("transcode_to_h264.ps1")
         ),
-    "6": (
+    "7": (
         "Show Track IDs (first file)", 
         _s("show_track_ids.ps1")
         )
